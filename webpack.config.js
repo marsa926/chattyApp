@@ -12,6 +12,10 @@ module.exports = {
     filename: 'bundle.js',
     publicPath: '/build/'
   },
+  watchOptions:{
+    poll: true,
+    ignored: /node_modules/
+  },
   module: {
     loaders: [
       {
