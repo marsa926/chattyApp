@@ -1,98 +1,105 @@
 import React, {Component} from 'react';
 import ChatBar from './ChatBar.jsx';
 import MessageList from './MessageList.jsx';
+import Notification from './Notification.jsx';
 
 class App extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      currentUser: {username:"Sara"},
-      messages: []
+      currentUser: {username:"Anonymous"},
+      messages: [],
+      onlineUsers: "",
+
     };
   }
 
+  updateUser(e){
 
-updateUser(e){
-  console.log(e);
     if (e.keyCode===13){
+      const oldUsername = this.state.currentUser.username;
+      const newUsername = e.target.value;
+
+      console.log("updateUser");
       const user = {
-        username: e.target.value
+      username: e.target.value,
+      type: "postNotification",
+      content: `${oldUsername} changed their username to ${newUsername}`
       };
-       console.log(user);
-       this.setState({currentUser:user});
-
+      this.setState({currentUser: {username:newUsername}});
+      this.socket.send(JSON.stringify(user));
+    }
   }
-
-}
 
   newChat(e){
     console.log("handling");
     if (e.keyCode === 13){
       const newMessage = {
         username: this.state.currentUser.username,
-        content: e.target.value
+        content: e.target.value,
+        type: "postMessage"
       };
-      console.log(newMessage);
-      // const message = this.state.messages.concat(newMessage);
-      this.socket.send(JSON.stringify(newMessage));
-      // this.setState({messages:message});
+    console.log(newMessage);
+    this.socket.send(JSON.stringify(newMessage));
+    }
   }
-}
-
-
-
 
   componentDidMount() {
     this.socket = new WebSocket('ws://localhost:3001/socketserver');
     this.socket.addEventListener('open', function(event){
       console.log("connected to server localhost:3001");
-
     });
 
     this.socket.onmessage = (event) => {
+      console.log(event);
       const newMsg = JSON.parse(event.data);
       console.log(newMsg);
-      console.log(this.state);
-      const messages = this.state.messages.concat(newMsg);
-      this.setState({messages:messages});
+      // console.log(this.state);
+      switch(newMsg.type){
+        case "onlineUsersNumber":
+
+        this.setState({onlineUsers:newMsg.data});
+          break;
+        case "incomingMessage":
+        console.log(newMsg,"this is a newone");
+          const messages = this.state.messages.concat(newMsg);
+          console.log(messages,"this is the message");
+          this.setState({messages:messages});
+          this.setState({notification:""});
+            break;
+        case "incomingNotification":
+        const notificationMsg = `${this.state.currentUser.username} has changes their name to ${newMsg.username}.`;
+        console.log(newMsg,"this is a new notification");
+        const updatedUsername = {
+          id:newMsg.id,
+          content: newMsg.content,
+          type: newMsg.type
+        };
+        const newMessages = this.state.messages.concat(updatedUsername);
+        this.setState({messages:newMessages});
+            break;
+
+      }
 
     };
 
-
-
-  // console.log("componentDidMount <App />");
-  // setTimeout(() => {
-  //   console.log("Simulating incoming message");
-  //   // Add a new message to the list of messages in the data store
-  //   const newMessage = {id: 3, username: "Michelle", content: "Hello there!"};
-  //   const messages = this.state.messages.concat(newMessage);
-
-  //   // Update the state of the app component.
-  //   // Calling setState will trigger a call to render() in App and all child components.
-  //   this.setState({messages: messages})
-  // }, 3000);
 }
-
-
-
-
-
-
   render() {
-
       return (
         <div className="wrapper">
         <nav>
         <h1>Chatty</h1>
+        <h3>{this.state.onlineUsers} users online</h3>
         </nav>
-      <MessageList messages={this.state.messages}/>
+      <MessageList messages={this.state.messages} notification={this.state.notification} />
       <ChatBar updateUser={this.updateUser.bind(this)} newChat={this.newChat.bind(this)} />
       </div>
-
     );
   }
 }
+
+
 export default App;
 
 
