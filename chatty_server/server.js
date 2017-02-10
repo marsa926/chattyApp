@@ -20,66 +20,46 @@ const wss = new SocketServer({ server });
 // the ws parameter in the callback.
 
 let onlineUsers = 0;
-
 wss.on('connection', (ws) => {
   console.log('Client connected');
-
   onlineUsers= onlineUsers+1;
   wss.clients.forEach(function each(client){
-      console.log("Hello I'm new");
-      const newMessage = {type: "onlineUsersNumber", data:onlineUsers};
+    const newMessage = {type: "onlineUsersNumber", data:onlineUsers};
     client.send(JSON.stringify(newMessage));
-
   });
-
-
 
   ws.on('message', function incoming(message){
     const newMessage = JSON.parse(message);
     newMessage.id = uuid.v1();
     console.log(newMessage);
-   switch(newMessage.type){
-    case "postMessage":
-    newMessage.type = "incomingMessage";
-      wss.clients.forEach(function each(client){
-      if(client.readyState===WebSocket.OPEN){
-        client.send(JSON.stringify(newMessage));
-      }
-    });
-    break;
-    case "postNotification":
-    newMessage.type="incomingNotification";
-    console.log("this is the ",newMessage);
-      wss.clients.forEach(function each(client){
-      if(client.readyState===WebSocket.OPEN){
-        client.send(JSON.stringify(newMessage));
-      }
-    });
-    break;
-   }
-
-
+    switch(newMessage.type){
+      case "postMessage":
+        newMessage.type = "incomingMessage";
+        wss.clients.forEach(function each(client){
+          if(client.readyState===WebSocket.OPEN){
+            client.send(JSON.stringify(newMessage));
+          }
+        });
+        break;
+      case "postNotification":
+        newMessage.type="incomingNotification";
+        wss.clients.forEach(function each(client){
+          if(client.readyState===WebSocket.OPEN){
+            client.send(JSON.stringify(newMessage));
+          }
+        });
+        break;
+    }
   });
-
-
-
-
 
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
   ws.on('close', () => {
-    console.log('Client connected');
-
-  onlineUsers= onlineUsers-1;
-  wss.clients.forEach(function each(client){
-      console.log("Hello I'm new");
+    console.log('Client Disconnected');
+    onlineUsers= onlineUsers-1;
+    wss.clients.forEach(function each(client){
       const newMessage = {type: "onlineUsersNumber", data:onlineUsers};
-    client.send(JSON.stringify(newMessage));
-
-});
-
-});
-
-
-
+      client.send(JSON.stringify(newMessage));
+    });
+  });
 });
 

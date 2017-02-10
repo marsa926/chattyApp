@@ -11,23 +11,23 @@ class App extends Component {
       currentUser: {username:"Anonymous"},
       messages: [],
       onlineUsers: "",
-
     };
   }
 
   updateUser(e){
-
     if (e.keyCode===13){
       const oldUsername = this.state.currentUser.username;
       const newUsername = e.target.value;
-
-      console.log("updateUser");
       const user = {
-      username: e.target.value,
-      type: "postNotification",
-      content: `${oldUsername} changed their username to ${newUsername}`
+        username: e.target.value,
+        type: "postNotification",
+        content: `${oldUsername} changed their username to ${newUsername}`
       };
-      this.setState({currentUser: {username:newUsername}});
+      this.setState({
+        currentUser: {
+          username:newUsername
+        }
+      });
       this.socket.send(JSON.stringify(user));
     }
   }
@@ -40,7 +40,6 @@ class App extends Component {
         content: e.target.value,
         type: "postMessage"
       };
-    console.log(newMessage);
     this.socket.send(JSON.stringify(newMessage));
     }
   }
@@ -50,55 +49,51 @@ class App extends Component {
     this.socket.addEventListener('open', function(event){
       console.log("connected to server localhost:3001");
     });
-
     this.socket.onmessage = (event) => {
-      console.log(event);
       const newMsg = JSON.parse(event.data);
-      console.log(newMsg);
-      // console.log(this.state);
       switch(newMsg.type){
         case "onlineUsersNumber":
-
-        this.setState({onlineUsers:newMsg.data});
+          this.setState({
+            onlineUsers:newMsg.data
+          });
           break;
         case "incomingMessage":
-        console.log(newMsg,"this is a newone");
           const messages = this.state.messages.concat(newMsg);
           console.log(messages,"this is the message");
-          this.setState({messages:messages});
-          this.setState({notification:""});
-            break;
+          this.setState({
+            messages:messages
+          });
+          this.setState({
+            notification:""
+          });
+          break;
         case "incomingNotification":
-        const notificationMsg = `${this.state.currentUser.username} has changes their name to ${newMsg.username}.`;
-        console.log(newMsg,"this is a new notification");
-        const updatedUsername = {
-          id:newMsg.id,
-          content: newMsg.content,
-          type: newMsg.type
-        };
-        const newMessages = this.state.messages.concat(updatedUsername);
-        this.setState({messages:newMessages});
-            break;
-
+          const notificationMsg = `${this.state.currentUser.username} has changes their name to ${newMsg.username}.`;
+          const updatedUsername = {
+            id:newMsg.id,
+            content: newMsg.content,
+            type: newMsg.type
+          };
+          const newMessages = this.state.messages.concat(updatedUsername);
+          this.setState({messages:newMessages});
+          break;
       }
-
     };
+  }
 
-}
   render() {
       return (
         <div className="wrapper">
-        <nav>
-        <h1>Chatty</h1>
-        <h3>{this.state.onlineUsers} users online</h3>
-        </nav>
-      <MessageList messages={this.state.messages} notification={this.state.notification} />
-      <ChatBar updateUser={this.updateUser.bind(this)} newChat={this.newChat.bind(this)} />
-      </div>
+          <nav>
+            <h1>Chatty</h1>
+            <h3>{this.state.onlineUsers} users online</h3>
+          </nav>
+          <MessageList messages={this.state.messages} notification={this.state.notification} />
+          <ChatBar updateUser={this.updateUser.bind(this)} newChat={this.newChat.bind(this)} />
+        </div>
     );
   }
 }
-
 
 export default App;
 
