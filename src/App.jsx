@@ -56,7 +56,7 @@ class App extends Component {
           this.setState({
             onlineUsers:newMsg.data
           });
-          break;
+        break;
         case "incomingMessage":
           const messages = this.state.messages.concat(newMsg);
           console.log(messages,"this is the message");
@@ -66,7 +66,7 @@ class App extends Component {
           this.setState({
             notification:""
           });
-          break;
+        break;
         case "incomingNotification":
           const notificationMsg = `${this.state.currentUser.username} has changes their name to ${newMsg.username}.`;
           const updatedUsername = {
@@ -75,8 +75,10 @@ class App extends Component {
             type: newMsg.type
           };
           const newMessages = this.state.messages.concat(updatedUsername);
-          this.setState({messages:newMessages});
-          break;
+          this.setState({
+            messages:newMessages
+          });
+        break;
       }
     };
   }

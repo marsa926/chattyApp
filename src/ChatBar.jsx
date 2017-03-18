@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 
 class ChatBar extends Component {
-
   render() {
     return (
       <footer>
@@ -11,9 +10,6 @@ class ChatBar extends Component {
     );
   }
 }
-
-
-
 
 export default ChatBar;
 
